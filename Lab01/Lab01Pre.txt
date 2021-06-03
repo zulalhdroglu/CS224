@@ -1,0 +1,155 @@
+CS 224
+Lab 01
+Section-5
+Zülal Nur Hıdıroğlu
+
+#Part1
+#It checks whether the array is symmetric or not
+
+.data 
+	palin: .ascii "\nIt is symmetrical"
+	array: .word 1,3,5,2,1	
+	disArray: .asciiz "The array is:\n"
+	arraySize: .word 5
+	notPal: .ascii "\nIt is not symmetrical "
+	newLine: .ascii "\n"
+	space: .ascii" "
+.text
+	addi $t0, $zero, 0 
+	lw $t1, arraySize #It is checks the array from last 
+    addi $t1, $t1, -1
+	sll $t1, $t1, 2#It multiples the array size with 4
+	addi $t3,$zero, 0
+	addi $t4, $zero, 0
+	
+	li $v0, 4
+	la $a0, disArray
+	syscall
+	
+	#It displays the array elemnts 
+	show:
+		beq $t0, 20, done # we have 5 elements in the array. and each has 4 bytes, so 20 is used
+		lw $t6, array($t0) #t6 stores current element
+		addi $t0, $t0, 4
+		#display the current element
+		li $v0, 1
+		move $a0, $t6
+		syscall
+		#space between array elements
+		li $v0, 4
+		la $a0, space
+		syscall
+		j show 
+
+	done:
+	# It updates t0 to 0
+    addi $t0, $zero, 0 #index of word
+    #new line
+    li $v0, 4
+    la $a0, newLine
+	
+	while:
+		bge $t0, $t1,palindrome #if the index of the word bigger than the index comes from back of the array, apply palindrome
+		lw $t3, array($t0)
+		lw $t4, array($t1)
+		addi $t0, $t0, 4
+		subi $t1,$t1, 4
+		bne $t3, $t4, notPalin#if they are not equal to each other, apply NotPalin
+		j while
+#ends the program
+exit:
+    li	$v0, 10
+	syscall
+palindrome:
+	li $v0,4
+	la $a0, palin#display symmetric message
+	syscall
+	j exit
+	
+notPalin:
+	li $v0,4
+	la $a0, notPal#displays not symmetric message
+	syscall
+	j exit
+
+
+
+#Part 2
+#It computes the equation x= a * (b - c) % d
+
+.data
+	enter: .asciiz "Enter 4 integers ( a, b, c, d): "
+	newline : .asciiz "\n"
+	result: .ascii "Result:  "
+.text
+	main:	
+	#Print the text
+	li $v0, 4
+	la $a0, enter
+	syscall
+	#print new line
+	li $v0, 4
+	la $a0, newline
+	syscall
+	
+	#enter  a
+	li $v0, 5
+	syscall
+	move $s0, $v0
+	
+	#enter  b
+	li $v0, 5
+	syscall
+	move $s1, $v0
+	
+	#enter  c
+	li $v0, 5
+	syscall
+	move $s2 , $v0
+
+	#enter  d
+	li $v0, 5
+	syscall
+	move $s3 , $v0
+	
+	#computation
+	jal compute 
+	move $v1, $v0
+	
+	#Print string result
+	li $v0, 4
+	la $a0, result
+	syscall
+	
+	#print the result
+	li $v0, 1
+	move $a0, $v1
+	syscall
+	#exit the program
+	li $v0, 10
+	syscall
+	
+	compute:
+		bgt $s2,$s1, reverse
+		sub $t0, $s1,$s2 # b-c
+		mul $t1, $s0, $t0 # a*(b-c)
+		mflo $t3 # quotient 
+		div $t1, $s3 #a*(b-c) / d
+		mfhi $t2 #remainder
+		move $v0, $t2
+		jr $ra
+	reverse: # since modulo result cannot be negative, Ireversed the order of subtraction
+		sub $t0, $s2, $s1#c-b
+		mul $t1, $s0, $t0 # a*(c-b)
+		mflo $t3 # quotient 
+		div $t1, $s3 #a*(c-b) / d
+		mfhi $t2 #remainder
+		move $v0, $t2
+		jr $ra
+		
+		
+		
+	
+	
+	
+	
